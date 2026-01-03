@@ -1,0 +1,6 @@
+/test*.sh
+
+*.pdf
+
+.env
+.token

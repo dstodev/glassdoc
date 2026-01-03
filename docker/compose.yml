@@ -1,0 +1,47 @@
+# -- Docker Compose reference:
+#    https://docs.docker.com/reference/compose-file/version-and-name
+
+name: glassdoc
+
+services:
+  db:
+    image: $DB_IMAGE
+    user: couchdb
+    env_file:
+      - .env
+    networks:
+      - db-net
+    volumes:
+      - db-data:/opt/couchdb/data
+
+  db-backup:
+    image: $DB_IMAGE
+    user: couchdb
+    env_file:
+      - .env
+    networks:
+      - db-net
+
+  db-route:
+    image: alpine/socat
+    command: "tcp-listen:$DB_PORT_HOST,reuseaddr,fork tcp-connect:db:$DB_PORT_INTERNAL"
+    ports:
+      - "$DB_PORT_HOST_USER:$DB_PORT_HOST"
+    networks:
+      - db-net
+
+  shell:
+    build:
+      context: .
+      dockerfile: shell.Dockerfile
+    env_file:
+      - .env
+    networks:
+      - db-net
+
+networks:
+  db-net:
+    driver: bridge
+
+volumes:
+  db-data:
