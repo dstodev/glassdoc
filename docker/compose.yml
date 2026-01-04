@@ -39,6 +39,17 @@ services:
     networks:
       - db-net
 
+  obsidian-webclient:
+    build:
+      context: .
+      dockerfile: view.Dockerfile
+    env_file:
+      - .env
+    networks:
+      - db-net
+    ports:
+      - "$WEBVIEW_PORT_HOST_USER:8080"
+
 networks:
   db-net:
     driver: bridge

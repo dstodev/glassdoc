@@ -9,23 +9,28 @@ docker_dir="$repo_dir/docker"
 # shellcheck source=script/util/couchdb.sh
 . "$util_dir/couchdb.sh"
 
-compose_env
+service_db='db'
+service_db_backup='db-backup'
 
-service_db=db
-service_db_backup=db-backup
+compose_env
 
 echo -n "Enter CouchDB password for $COUCHDB_USER@$service_db: "
 read -rs pass
 echo
 
+compose build "$service_db_backup"
 compose up \
-	--build \
 	--detach \
 	--remove-orphans \
 	"$service_db" \
 	"$service_db_backup"
 
 db_await_up "$service_db_backup"
+
+cleanup() {
+	compose down --remove-orphans "$service_db_backup"
+}
+trap cleanup EXIT
 
 tok="$(db_login_token "$service_db" "$COUCHDB_USER" "$pass")"
 
@@ -43,3 +48,6 @@ db_request "$service_db" POST _replicate "$tok" \
 	"create_target": true,
 	"continuous": false
 }'
+
+# TODO: After replicate to backup container, backup the temporary container's
+# data to dir backup/ with name glassdoc-backup_YYYY-MM-DD_HH-MM-SS_TZ.tar.gz

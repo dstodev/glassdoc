@@ -8,4 +8,4 @@ util_dir="$repo_dir/script/util"
 # shellcheck source=script/util/compose.sh
 . "$util_dir/compose.sh"
 
-compose down --remove-orphans db-route db
+compose down --remove-orphans

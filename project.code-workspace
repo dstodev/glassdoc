@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": ".",
+			"name": "Glassdoc"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"in.env": "shellscript"
+		}
+	}
+}

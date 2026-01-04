@@ -32,10 +32,15 @@ compose_env() {
 	docker_dir="$repo_dir/docker"
 	env_file="$docker_dir/.env"
 
-	[ -f "$env_file" ] || _interpolate_env_in
+	[ -f "$env_file" ] || _interpolate_env_in | _snip >"$env_file"
 
 	# shellcheck source=docker/in.env
 	. "$env_file"
+}
+
+_snip() {
+	sed '/^#[[:space:]]*+snip/,/^#[[:space:]]*-snip/d' |
+		cat --squeeze-blank
 }
 
 _interpolate_env_in() {
@@ -45,6 +50,6 @@ _interpolate_env_in() {
 	docker_dir="$repo_dir/docker"
 	(
 		umask 0377 # u=r,go=
-		print_bash_interpreted_file "$docker_dir/in.env" >"$docker_dir/.env"
+		print_bash_interpreted_file "$docker_dir/in.env"
 	)
 }

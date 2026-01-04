@@ -95,6 +95,10 @@ cmd_exists() {
 	done
 }
 
+host_ip() {
+	ip route get 1 | awk '{ print $7; exit }'
+}
+
 repo_root() {
 	local dir
 	# ${BASH_SOURCE[0]} in a function from a sourced file contains the path to
@@ -119,7 +123,13 @@ print_list() {
 	done
 }
 
-# Read "$1" and print its Bash-interpreted contents.
+# Read file with path "$1" and print its Bash-interpreted contents.
+#
+# For each line:
+# 1. Capture the Bash-evaluated line as-printed-by printf from a subshell.
+# 2. Print the evaluated line.
+# 3. Evaluate the line within the function's subshell to preserve side-effects
+#    such as variable assignments for subsequent lines.
 print_bash_interpreted_file() {
 	local in_file
 	in_file="$1"
@@ -130,12 +140,9 @@ print_bash_interpreted_file() {
 	#    otherwise have their last line skipped.
 	(
 		while IFS='' read -r line || [ -n "$line" ]; do
-			result="$(
-				eval "printf '%s\n' \"$line\""
-			)"
+			result="$(eval "printf '%s\n' \"$line\"")"
 			echo "$result"
 			eval "$result"
-
 		done <"$in_file"
 	)
 }

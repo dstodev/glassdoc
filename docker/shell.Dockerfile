@@ -1,6 +1,8 @@
-FROM ubuntu:24.04
+FROM ubuntu:noble
 
-RUN apt-get update && apt-get install -y \
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install --yes \
 	curl \
 	iputils-ping \
 	jq \

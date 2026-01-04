@@ -52,7 +52,7 @@ Host *
 age --encrypt \
 	--recipient "$(ssh-to-age <<<"$(ssh-add -L | head -n1)")" \
 	--output secret.txt.age \
-	secret.txtm
+	secret.txt
 
 # (on computer with private key)
 
