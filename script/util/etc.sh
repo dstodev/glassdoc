@@ -58,12 +58,8 @@ bash_sourced_this_file() {
 		print_source_origin >/dev/null
 }
 
-# Print the canonical path of the file that calls print_source_origin(), then
-# return
-# 0. If not sourced, instead print nothing then return 1.
-#
-# Implemented by printing the canonical path of the file that sources the file
-# containing this function definition.
+# Print the canonical path of the file that sources the file containing this
+# function definition. If not sourced, instead print nothing and return 1.
 #
 # Requires Bash for BASH_SOURCE and FUNCNAME arrays.
 print_source_origin() {
@@ -126,10 +122,10 @@ print_list() {
 # Read file with path "$1" and print its Bash-interpreted contents.
 #
 # For each line:
-# 1. Capture the Bash-evaluated line as-printed-by printf from a subshell.
-# 2. Print the evaluated line.
-# 3. Evaluate the line within the function's subshell to preserve side-effects
-#    such as variable assignments for subsequent lines.
+# 1. Capture the Bash-evaluated line from a subshell's output.
+# 2. Print the evaluated line for capture by parent.
+# 3. Evaluate the line within the outer subshell to preserve side-effects such
+#    as variable assignments for subsequent lines.
 print_bash_interpreted_file() {
 	local in_file
 	in_file="$1"
@@ -141,8 +137,8 @@ print_bash_interpreted_file() {
 	(
 		while IFS='' read -r line || [ -n "$line" ]; do
 			result="$(eval "printf '%s\n' \"$line\"")"
-			echo "$result"
-			eval "$result"
+			echo "$result" # print evaluated line
+			eval "$result" # preserve side-effects
 		done <"$in_file"
 	)
 }

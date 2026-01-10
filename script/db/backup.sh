@@ -49,5 +49,5 @@ db_request "$service_db" POST _replicate "$tok" \
 	"continuous": false
 }'
 
-# TODO: After replicate to backup container, backup the temporary container's
-# data to dir backup/ with name glassdoc-backup_YYYY-MM-DD_HH-MM-SS_TZ.tar.gz
+# TODO: After replicate to backup db, copy data from the backup db container to
+# dir backup/ with name format: glassdoc-backup_YYYY-MM-DD_HH-MM-SS_TZ.tar.gz

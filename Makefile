@@ -8,8 +8,8 @@ ps:
 # Create the database and populate bare-minimum data
 init:
 	$(MAKE) stop start
-	script/db/init-obsidiandb.sh
-	$(MAKE) webclient
+	script/db/init.sh
+	$(MAKE) client
 .PHONY: init
 
 # Start the CouchDB service
@@ -18,19 +18,22 @@ start:
 .PHONY: start
 
 # Start a web-accessible Obsidian client
-webclient:
-	script/webclient.sh
-.PHONY: webclient
+client:
+	script/client.sh
+.PHONY: client
 
-webclient-logs:
-	script/compose-shim.sh exec obsidian-webclient bash -c 'tail --lines +1 service-logs/*.log'
-	script/compose-shim.sh logs obsidian-webclient
-.PHONY: webclient-logs
+client-log:
+	script/compose-shim.sh logs --follow client
+.PHONY: client-log
 
-webclient-shell:
-	script/compose-shim.sh exec obsidian-webclient bash
-.PHONY: webclient-shell
+client-job-logs:
+	script/compose-shim.sh exec client bash -c 'tail --lines +1 service-logs/*.log'
+	script/compose-shim.sh logs client
+.PHONY: client-job-logs
 
+client-shell:
+	script/compose-shim.sh exec client bash
+.PHONY: client-shell
 # Stop all db services
 stop:
 	script/db/stop.sh

@@ -15,7 +15,8 @@ compose_env
 
 db_await_up db
 
-# -- Set up single-node cluster
+# -- Set up single-node CouchDB cluster
+
 # https://docs.couchdb.org/en/stable/setup/single-node.html
 # https://docs.couchdb.org/en/stable/api/server/common.html#post--_cluster_setup
 # e.g.: POST /_cluster_setup
@@ -35,12 +36,14 @@ db_request_with_credential db POST _cluster_setup "$COUCHDB_USER:$COUCHDB_PASSWO
 	--header 'Content-Type: application/json' \
 	--data "$setup_payload"
 
-# -- Set up admin user
+# -- Set up primary user
 
 tok="$(db_login_token db "$COUCHDB_USER" "$COUCHDB_PASSWORD")"
 db_try_token db "$tok"
 
 tok="$(db_set_admin_password db "$tok")"
+
+# -- Populate bare-minimums for connection from Obsidian via livesync plugin
 
 # Create obsidiandb database
 # https://docs.couchdb.org/en/stable/api/database/common.html#put--db

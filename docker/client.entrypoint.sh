@@ -10,7 +10,7 @@ if [ "$(id --user)" -eq 0 ]; then
 fi
 
 echo "! Starting Obsidian web client"
-pwd
+printf -- '- workdir: %s\n' "$(pwd)"
 
 export DBUS_SYSTEM_BUS_ADDRESS=unix:path=/run/dbus/system_bus_socket
 
@@ -18,6 +18,7 @@ eval "$(dbus-launch --sh-syntax)"
 export DBUS_SESSION_BUS_ADDRESS
 export DBUS_SESSION_BUS_PID
 
+BG_SERVICE_PIDS=()
 start_bg_service() {
 	local cmd="$1"
 	shift
@@ -25,45 +26,51 @@ start_bg_service() {
 	local log_pfx="$log_dir/$cmd"
 	mkdir -p "$log_dir"
 	if ! pgrep --exact "$cmd" >/dev/null; then
-		echo "$cmd $*" >&2
+		echo "$cmd $*"
 		"$cmd" "$@" >"$log_pfx.out.log" 2>"$log_pfx.err.log" &
 		pid=$!
-		ps -p "$pid" >&2
+		ps -p "$pid"
+		BG_SERVICE_PIDS+=("$pid")
 	fi
-	LAST_PID=$pid
 }
 
-services=()
+# Create virtual framebuffer
 start_bg_service Xvfb "$DISPLAY" \
 	-nolisten tcp \
 	-nolisten unix \
-	-screen 0 1920x1080x24
-services+=("$LAST_PID")
+	-screen 0 "$WEBVIEW_RESOLUTION"
 
+# Start X11 window manager
 start_bg_service openbox
-services+=("$LAST_PID")
 
+# Start VNC server to share X11 display
 start_bg_service x11vnc \
 	-display "WAIT$DISPLAY" \
 	-forever \
 	-listen localhost \
-	-ncache 10 \
 	-nopw \
-	-rfbport 5900
-services+=("$LAST_PID")
+	-rfbport "$WEBVIEW_PORT_X11VNC_INTERNAL"
+#	removed `-ncache 10` because it causes weird screen duplication
 
+# Start Obsidian application
 start_bg_service obsidian \
-	--enable-unsafe-swiftshader \
-	--no-sandbox
-services+=("$LAST_PID")
+	--no-sandbox \
+	--disable-gpu \
+	--use-gl=swiftshader
+
+# Start websockify to provide noVNC access to VNC server over HTTP
 start_bg_service websockify \
 	--web=/usr/share/novnc/ \
-	8080 localhost:5900
-services+=("$LAST_PID")
+	"$WEBVIEW_PORT_HTTP_INTERNAL" "localhost:$WEBVIEW_PORT_X11VNC_INTERNAL"
 
-mkdir -p "$HOME/vault"
+# Set up environment
+# TODO: Mount with Docker to host
+#mkdir -p "$HOME/vault"
 
-for svc_pid in "${services[@]}"; do
+# Set "desktop" background color
+xsetroot -solid gray
+
+for svc_pid in "${BG_SERVICE_PIDS[@]}"; do
 	echo "- Awaiting process exit: $svc_pid"
 	wait "$svc_pid"
 done

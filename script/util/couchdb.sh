@@ -17,14 +17,14 @@ db_request() {
 	local path="$3"
 	local token="$4"
 	shift 4
-	local cookies=()
+	local addtl_args=()
 	if [ -n "$token" ]; then
-		cookies+=(--cookie "$token")
+		addtl_args+=(--cookie "$token")
 	fi
 	(
 		compose_env
 		url="http://$service:$DB_PORT_INTERNAL/$path"
-		_db_curl --request "$method" "${cookies[@]}" "$url" "$@"
+		_db_curl --request "$method" "${addtl_args[@]}" "$url" "$@"
 	)
 }
 

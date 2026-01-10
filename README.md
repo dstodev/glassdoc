@@ -9,10 +9,6 @@
   (archived to [doc/guide.md](doc/guide.md))
 - [obsidian-livesync plugin](https://github.com/vrtmrz/obsidian-livesync)
 
-### Hosting web view
-
-- [webtop](https://github.com/linuxserver/docker-webtop)
-
 ### Misc
 
 - [markdown_supported_languages](https://github.com/jincheng9/markdown_supported_languages)
@@ -26,5 +22,11 @@ make init
 ## Useful Commands
 
 ```bash
-script/compose-shim.sh logs --follow obsidian-webclient
+
+```
+
+## Scratch
+
+```bash
+/home/ubuntu/.config/obsidian/obsidian.json
 ```

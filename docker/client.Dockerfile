@@ -3,11 +3,16 @@ FROM ubuntu:noble
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install --yes \
+	# basic dependencies
 	ca-certificates \
+	curl \
 	tini \
 	wget \
 	\
-	# required to host web view
+	# required to host web view, suppress warnings, etc.
+	dbus \
+	dbus-x11 \
+	dconf-service \
 	libgbm1 \
 	libgtk-3-0 \
 	libnss3 \
@@ -25,15 +30,10 @@ RUN apt-get update && apt-get install --yes \
 	libasound2t64 \
 	libnotify4 \
 	libsecret-1-0 \
-	xdg-utils \
-	\
-	dbus \
-	dbus-x11 \
-	dconf-service \
-	\
-	&& rm -rf /var/lib/apt/lists/* \
-	&& apt-get clean
+	xdg-utils
 
+RUN apt-get clean \
+	&& rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt/obsidian
 RUN wget https://github.com/obsidianmd/obsidian-releases/releases/download/v1.10.6/obsidian_1.10.6_amd64.deb \
@@ -42,6 +42,6 @@ RUN wget https://github.com/obsidianmd/obsidian-releases/releases/download/v1.10
 WORKDIR /home/ubuntu
 ENV DISPLAY=:0
 
-COPY --chown=ubuntu:ubuntu view.entrypoint.sh view.entrypoint.sh
+COPY --chown=ubuntu:ubuntu client.entrypoint.sh client.entrypoint.sh
 
-ENTRYPOINT ["/usr/bin/tini", "--", "./view.entrypoint.sh"]
+ENTRYPOINT ["tini", "--", "./client.entrypoint.sh"]

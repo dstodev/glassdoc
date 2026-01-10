@@ -39,16 +39,30 @@ services:
     networks:
       - db-net
 
-  obsidian-webclient:
+  client:
     build:
       context: .
-      dockerfile: view.Dockerfile
+      dockerfile: client.Dockerfile
     env_file:
       - .env
     networks:
       - db-net
+    volumes:
+      - vault:/home/ubuntu/.vault
+
+  client-route:
+    image: alpine/socat
+    command: "tcp-listen:$WEBVIEW_PORT_HOST,reuseaddr,fork tcp-connect:client:$WEBVIEW_PORT_HTTP_INTERNAL"
     ports:
-      - "$WEBVIEW_PORT_HOST_USER:8080"
+      - "$WEBVIEW_PORT_HOST_USER:$WEBVIEW_PORT_HOST"
+    networks:
+      - db-net
+
+  # TODO
+  # https://github.com/NginxProxyManager/nginx-proxy-manager
+  gateway:
+    image: 'docker.io/jc21/nginx-proxy-manager:latest'
+    restart: unless-stopped
 
 networks:
   db-net:
@@ -56,3 +70,4 @@ networks:
 
 volumes:
   db-data:
+  vault:

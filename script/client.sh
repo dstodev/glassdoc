@@ -8,17 +8,19 @@ util_dir="$repo_dir/script/util"
 # shellcheck source=script/util/compose.sh
 . "$util_dir/compose.sh"
 
-service='obsidian-webclient'
+service='client'
+service_route='client-route'
 
-compose down --remove-orphans "$service"
+compose down --remove-orphans "$service" "$service_route"
 compose build "$service" >/dev/null
 compose up \
 	--detach \
 	--remove-orphans \
-	"$service"
+	"$service" \
+	"$service_route"
 
 announce() { (
 	compose_env
-	echo "Web client available: http://$(host_ip):$WEBVIEW_PORT_HOST_USER/vnc.html"
+	echo "Web-client available: http://$(host_ip):$WEBVIEW_PORT_HOST_USER/vnc.html"
 ); }
 announce
